@@ -34,21 +34,23 @@ Notes: [any special considerations]`;
 
     const userPrompt = `Vehicle info: ${REG}, ${MAKE} ${MODEL}, ${YEAR}, ${FUEL}, ${TRANSMISSION}, ${MILEAGE} miles. Symptom/Fault Code: ${SYMPTOM}. Recent Work: ${RECENT_WORK}`;
 
-    const resp = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o",
-        temperature: 0.2,
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-      }),
-    });
+    const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${process.env.OPENROUTER_API_KEY}`,
+    "HTTP-Referer": "https://daignostics2.onrender.com", // your site URL
+    "X-Title": "RVS Garage Diagnostics"
+  },
+  body: JSON.stringify({
+    model: "openai/gpt-4o-mini", // cheaper & available in free tier
+    temperature: 0.2,
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+  }),
+});
 
     if (!resp.ok) {
       const txt = await resp.text();
