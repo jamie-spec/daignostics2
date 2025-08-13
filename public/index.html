@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RVS Garage Diagnostics</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-900">
+  <div class="max-w-5xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">RVS Garage — Diagnosis Report</h1>
+
+    <form id="diagForm" class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-2xl shadow">
+      <input id="REG" class="input" placeholder="REG (e.g., AB12 CDE)" />
+      <input id="MAKE" class="input" placeholder="Make" />
+      <input id="MODEL" class="input" placeholder="Model" />
+      <input id="YEAR" class="input" placeholder="Year" />
+      <input id="FUEL" class="input" placeholder="Fuel (Petrol/Diesel/Hybrid/EV)" />
+      <input id="TRANSMISSION" class="input" placeholder="Transmission" />
+      <input id="MILEAGE" class="input" placeholder="Mileage" />
+      <textarea id="SYMPTOM" class="md:col-span-3 input h-28" placeholder="Symptom or fault codes"></textarea>
+      <textarea id="RECENT_WORK" class="md:col-span-3 input h-24" placeholder="Recent work"></textarea>
+
+      <div class="md:col-span-3 flex gap-3 items-center">
+        <button id="submitBtn" type="submit" class="px-4 py-2 rounded-xl bg-blue-600 text-white">Generate Diagnosis</button>
+        <span id="status" class="text-sm"></span>
+      </div>
+    </form>
+
+    <div id="output" class="mt-6 bg-white p-4 rounded-2xl shadow whitespace-pre-wrap"></div>
+  </div>
+
+  <style>
+    .input { width: 100%; border: 1px solid #cbd5e1; border-radius: 0.75rem; padding: 0.5rem; }
+    .input:focus { box-shadow: 0 0 0 2px #3b82f6; outline: none; }
+  </style>
+
+  <script>
+    const form = document.getElementById('diagForm');
+    const statusEl = document.getElementById('status');
+    const out = document.getElementById('output');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      out.textContent = '';
+      statusEl.textContent = 'Generating…';
+      document.getElementById('submitBtn').disabled = true;
+
+      const payload = {
+        REG: REG.value.trim(),
+        MAKE: MAKE.value.trim(),
+        MODEL: MODEL.value.trim(),
+        YEAR: YEAR.value.trim(),
+        FUEL: FUEL.value.trim(),
+        TRANSMISSION: TRANSMISSION.value.trim(),
+        MILEAGE: MILEAGE.value.trim(),
+        SYMPTOM: SYMPTOM.value.trim(),
+        RECENT_WORK: RECENT_WORK.value.trim(),
+      };
+
+      try {
+        const resp = await fetch('/api/diagnose', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || data.error || 'Request failed');
+        out.textContent = data.report;
+        statusEl.textContent = '';
+      } catch (err) {
+        statusEl.textContent = 'Error: ' + err.message;
+      } finally {
+        document.getElementById('submitBtn').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
